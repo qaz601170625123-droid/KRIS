@@ -83,12 +83,12 @@ body{background:var(--bg);color:var(--t1);font-family:'Inter',-apple-system,sans
 .pay-date{font-size:13px;color:var(--t3);font-weight:500;}
 .pay-amt{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;flex-shrink:0;padding-right:4px;}
 
-.dw{border-radius:var(--r-xl);padding:20px 20px 18px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);background:var(--card);}
+.dw{border-radius:var(--r-xl);padding:20px 20px 18px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);}
 .dw-0,.dw-1,.dw-2,.dw-3,.dw-4,.dw-5,.dw-6,.dw-7,.dw-8,.dw-9,.dw-10{background:var(--card);}
-.dw.cleared{opacity:.45;}
+.dw.cleared{opacity:.55;}
 .dw-name{font-size:18px;font-weight:800;color:var(--t1);letter-spacing:-.3px;margin-bottom:3px;}
 .dw-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:800;color:var(--t3);background:var(--bg);padding:4px 10px;border-radius:99px;margin-bottom:10px;}
-.dw-badge.cleared-badge{color:var(--green);background:var(--green-bg);}
+.dw-badge.cleared{color:var(--green);background:var(--green-bg);}
 .dw-end{font-size:13px;color:var(--t3);font-weight:500;margin-bottom:14px;}
 .dw-nums{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--divider);padding-top:14px;}
 .dw-num{text-align:center;}
@@ -109,6 +109,21 @@ body{background:var(--bg);color:var(--t1);font-family:'Inter',-apple-system,sans
 .asset-item:not(:last-child){border-right:1px solid rgba(0,0,0,.1);}
 .asset-item-lbl{font-size:10px;font-weight:700;color:rgba(0,0,0,.4);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;}
 .asset-item-val{font-size:17px;font-weight:800;color:var(--t1);font-variant-numeric:tabular-nums;}
+.asset-item-edit{display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;}
+.asset-item-edit:active{opacity:.6;}
+.edit-pencil{font-size:11px;opacity:.4;margin-top:1px;}
+
+/* edit asset modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-bg.show{opacity:1;pointer-events:all;}
+.modal-box{background:var(--card);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:24px 20px calc(var(--safe-bot)+24px);width:100%;max-width:430px;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.1,.64,1);}
+.modal-bg.show .modal-box{transform:translateY(0);}
+.modal-title{font-size:17px;font-weight:800;color:var(--t1);margin-bottom:18px;text-align:center;}
+.modal-fields{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.modal-lbl{font-size:12px;font-weight:700;color:var(--t3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-cancel{background:var(--bg);color:var(--t2);border:none;border-radius:var(--r-sm);padding:14px;font-family:'Inter',sans-serif;font-size:16px;font-weight:700;cursor:pointer;}
+.btn-save{background:var(--blue);color:white;border:none;border-radius:var(--r-sm);padding:14px;font-family:'Inter',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,122,255,.28);}
 
 .add-card{background:var(--card);border-radius:var(--r-lg);padding:18px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.06);}
 .add-title{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;}
@@ -136,7 +151,7 @@ input:focus,select:focus{border-color:var(--blue);background:white;}
 /* savings summary */
 .sav-summary{background:var(--card);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);}
 .sav-sum-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
-.sav-sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sav-sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .sav-sum-item{background:var(--bg);border-radius:var(--r-sm);padding:10px 12px;}
 .sav-sum-lbl{font-size:11px;font-weight:700;color:var(--t3);margin-bottom:4px;}
 .sav-sum-val{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;}
@@ -206,8 +221,8 @@ input:focus,select:focus{border-color:var(--blue);background:white;}
     <div id="debtList"></div>
   </div>
   <div class="page" id="page-savings">
-    <div class="asset-card">
-      <div class="asset-lbl">總資產</div>
+    <div class="asset-card" onclick="openAssetModal()">
+      <div class="asset-lbl">總資產 ✎</div>
       <div class="asset-total" id="assetTotal">$0</div>
       <div class="asset-row">
         <div class="asset-item"><div class="asset-item-lbl">現金</div><div class="asset-item-val" id="assetCash">$0</div></div>
@@ -249,7 +264,7 @@ input:focus,select:focus{border-color:var(--blue);background:white;}
         <button class="btn-pill" onclick="clearMon()">清除</button>
       </div>
     </div>
-    <div class="filter-tabs" id="filterTabs">
+    <div class="filter-tabs">
       <button class="ftab active" onclick="setFilter('all',this)">全部</button>
       <button class="ftab" onclick="setFilter('income',this)">收入</button>
       <button class="ftab" onclick="setFilter('expense',this)">支出</button>
@@ -264,6 +279,26 @@ input:focus,select:focus{border-color:var(--blue);background:white;}
   <button class="tabitem active" onclick="switchTab('payments',this)"><span class="tab-icon">💳</span><span class="tab-lbl">繳費</span></button>
   <button class="tabitem" onclick="switchTab('debts',this)"><span class="tab-icon">📊</span><span class="tab-lbl">債務</span></button>
   <button class="tabitem" onclick="switchTab('savings',this)"><span class="tab-icon">💰</span><span class="tab-lbl">存款</span></button>
+</div>
+
+<div class="modal-bg" id="assetModal" onclick="closeAssetModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">編輯資產</div>
+    <div class="modal-fields">
+      <div>
+        <div class="modal-lbl">現金</div>
+        <input type="number" id="editCash" inputmode="numeric" placeholder="0">
+      </div>
+      <div>
+        <div class="modal-lbl">投資</div>
+        <input type="number" id="editInvest" inputmode="numeric" placeholder="0">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeAssetModal()">取消</button>
+      <button class="btn-save" onclick="saveAsset()">儲存</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -403,7 +438,8 @@ const isCurr=()=>cy===TODAY.getFullYear()&&cm===TODAY.getMonth()+1;
 let ckCache={};   // checks
 let assetCache={cash:560000,invest:0};
 let recsCache=[];  // current month records
-let payRecMap={};  // k -> savings record id (for reversal)
+let payRecMap={};  // payment key -> savings record id
+
 
 function setSyncDot(state){
   const d=document.getElementById('syncDot');
@@ -522,10 +558,14 @@ function renderPayments(){
       const eDay=parseInt(e.date.split('-')[2]),diff=eDay-td;
       const isToday=isCurr()&&diff===0,isSoon=isCurr()&&diff>0&&diff<=3;
       const cls=done?'done':isToday?'due-today':isSoon?'due-soon':'';
+      // find matching debt for remaining periods
+      const debt = DEBTS.find(d=>d.name===e.name);
+      const remPeriods = debt ? Math.max(0, totalP(debt)-paidP(debt,cy,cm)) : null;
+      const periodTag = (remPeriods!==null && cat==='還款') ? `<span style="font-size:11px;color:var(--t3);font-weight:600;margin-left:4px;">剩${remPeriods}期</span>` : '';
       html+=`<div class="pay-item ${cls}" onclick="togglePay('${k}','${e.date}','${e.name}')">
         <div class="chk">${done?'✓':''}</div>
         <div class="cat-bar bar-${cat}"></div>
-        <div class="pay-mid"><div class="pay-name">${e.name}</div><div class="pay-date">${cm}月${eDay}日</div></div>
+        <div class="pay-mid"><div class="pay-name">${e.name}${periodTag}</div><div class="pay-date">${cm}月${eDay}日</div></div>
         <div class="pay-amt ${aC[cat]}">${fmt(e.amount)}</div>
         ${isToday&&!done?'<span class="today-tag">今天</span>':''}
       </div>`;
@@ -538,7 +578,6 @@ function renderPayments(){
 
 async function togglePay(k, date, name){
   const newDone = !ckCache[k];
-  // find the event to get amount & category
   const evt = EVENTS.find(e => ikey(e) === k);
   if (!evt) return;
   const amt = evt.amount;
@@ -549,24 +588,18 @@ async function togglePay(k, date, name){
   try {
     const mk = mkey(cy, cm);
     if (newDone) {
-      // 1. write check
       await dbSetCheck(mk, k, true);
-      // 2. deduct cash (還款/提前還款 also deducts)
       const newCash = assetCache.cash - amt;
       await dbSetAsset(newCash, assetCache.invest);
       assetCache = { ...assetCache, cash: newCash };
-      // 3. add savings record (type: repay for 還款, invest for 投資/獎金投資)
       const recType = isRepay ? 'repay' : 'invest';
       const newRec = await dbAddRecord(mk, { name, amount: amt, type: recType, date, auto: true });
-      if (newRec) {
-        // store the record id in a map for reversal
-        payRecMap[k] = newRec.id;
+      if (newRec) payRecMap[k] = newRec.id;
+      if (document.getElementById('page-savings').classList.contains('active')) {
+        recsCache = await dbGetRecords(mk); renderSavings();
       }
-      // refresh savings if on savings tab
-      if (document.getElementById('page-savings').classList.contains('active')) { recsCache = await dbGetRecords(mk); renderSavings(); }
       showToast('已完成 ✓');
     } else {
-      // reversal: delete check, restore cash, delete savings record
       await dbSetCheck(mk, k, false);
       const newCash = assetCache.cash + amt;
       await dbSetAsset(newCash, assetCache.invest);
@@ -575,16 +608,17 @@ async function togglePay(k, date, name){
         await dbDelRecord(payRecMap[k]);
         delete payRecMap[k];
       } else {
-        // try to find by name+date in recsCache or fetch
         const allRecs = await dbGetRecords(mk);
         const found = allRecs.find(r => r.name === name && r.date === date);
         if (found) await dbDelRecord(found.id);
       }
-      if (document.getElementById('page-savings').classList.contains('active')) { recsCache = await dbGetRecords(mk); renderSavings(); }
+      if (document.getElementById('page-savings').classList.contains('active')) {
+        recsCache = await dbGetRecords(mk); renderSavings();
+      }
       showToast('已取消');
     }
   } catch(e){
-    ckCache[k] = !newDone; // rollback
+    ckCache[k] = !newDone;
     renderPayments();
     showToast('⚠️ 同步失敗');
   }
@@ -601,7 +635,7 @@ function renderDebts(){
     html+=`<div class="dw dw-${i} ${cleared?'cleared':''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
         <div class="dw-name">${d.name}</div>
-        <span class="dw-badge${cleared?' cleared-badge':''}">${cleared?'✓ 還清':'剩 '+left+' 期'}</span>
+        <span class="dw-badge${cleared?' cleared':''}">${cleared?'✓ 還清':'剩 '+left+' 期'}</span>
       </div>
       <div class="dw-end">還清日：${d.end}　月付：${fmt(d.monthly)}</div>
       <div class="dw-nums">
@@ -640,26 +674,28 @@ function setFilter(f, el) {
 }
 
 function renderSavings(){
-  const recs=recsCache;
-  const mInc=recs.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
-  const mExp=recs.filter(r=>r.type==='expense').reduce((s,r)=>s+r.amount,0);
-  const mInv=recs.filter(r=>r.type==='invest').reduce((s,r)=>s+r.amount,0);
-  const mRepay=recs.filter(r=>r.type==='repay').reduce((s,r)=>s+r.amount,0);
-  const mNet=mInc-mExp-mInv-mRepay;
-  document.getElementById('assetTotal').textContent=fmt(assetCache.cash+assetCache.invest);
-  document.getElementById('assetCash').textContent=fmt(assetCache.cash);
-  document.getElementById('assetInvest').textContent=fmt(assetCache.invest);
-  const an=document.getElementById('assetNet');
-  an.textContent=(mNet>=0?'+':'')+fmt(mNet);
-  an.style.color=mNet>=0?'var(--green)':'var(--red)';
-  // summary
-  document.getElementById('sumIncome').textContent=fmt(mInc);
-  document.getElementById('sumExpense').textContent=fmt(mExp);
-  document.getElementById('sumRepay').textContent=fmt(mRepay);
-  document.getElementById('sumInvest').textContent=fmt(mInv);
-  // filter
+  const recs = recsCache;
+  const mInc  = recs.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
+  const mExp  = recs.filter(r=>r.type==='expense').reduce((s,r)=>s+r.amount,0);
+  const mInv  = recs.filter(r=>r.type==='invest').reduce((s,r)=>s+r.amount,0);
+  const mRepay= recs.filter(r=>r.type==='repay').reduce((s,r)=>s+r.amount,0);
+  const mNet  = mInc - mExp - mInv - mRepay;
+
+  document.getElementById('assetTotal').textContent = fmt(assetCache.cash + assetCache.invest);
+  document.getElementById('assetCash').textContent  = fmt(assetCache.cash);
+  document.getElementById('assetInvest').textContent= fmt(assetCache.invest);
+  const an = document.getElementById('assetNet');
+  an.textContent = (mNet>=0?'+':'')+fmt(mNet);
+  an.style.color = mNet>=0?'var(--green)':'var(--red)';
+
+  document.getElementById('sumIncome').textContent  = fmt(mInc);
+  document.getElementById('sumExpense').textContent = fmt(mExp);
+  document.getElementById('sumRepay').textContent   = fmt(mRepay);
+  document.getElementById('sumInvest').textContent  = fmt(mInv);
+
   const filtered = savFilter==='all' ? recs : recs.filter(r=>r.type===savFilter);
-  document.getElementById('recCnt').textContent=recs.length;
+  document.getElementById('recCnt').textContent = recs.length;
+
   if(!recs.length){
     document.getElementById('recList').innerHTML=`<div class="empty"><div class="empty-icon">📝</div><div class="empty-text">本月尚無紀錄</div></div>`;
     return;
@@ -668,23 +704,26 @@ function renderSavings(){
     document.getElementById('recList').innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">此類別無紀錄</div></div>`;
     return;
   }
+
   const icons={income:'💵',expense:'💸',invest:'📈',repay:'🏦'};
-  const lbl={income:'收入',expense:'支出',invest:'存股',repay:'還款'};
-  const aC={income:'vgreen',expense:'vred',invest:'vpurple',repay:'vorange'};
-  const sign={income:'+',expense:'-',invest:'-',repay:'-'};
-  document.getElementById('recList').innerHTML=`<div class="rec-card">`+
+  const lbl  ={income:'收入',expense:'支出',invest:'存股',repay:'還款'};
+  const aC   ={income:'vgreen',expense:'vred',invest:'vpurple',repay:'vorange'};
+  const sign ={income:'+',expense:'-',invest:'-',repay:'-'};
+
+  document.getElementById('recList').innerHTML='<div class="rec-card">'+
     filtered.map(r=>{
-      const d=r.date.split('-');
-      const isAuto = r.auto === true || r.auto === 'true';
+      const d = r.date.split('-');
+      const isAuto = r.auto===true || r.auto==='true';
+      const typeClass = r.type==='repay'?'expense':r.type;
       return `<div class="rec-item">
-        <div class="rec-icon ri-${r.type==='repay'?'expense':r.type}">${icons[r.type]||'📌'}</div>
+        <div class="rec-icon ri-${typeClass}">${icons[r.type]||'📌'}</div>
         <div class="rec-mid">
           <div class="rec-name">${r.name}${isAuto?'<span class="auto-tag">自動</span>':''}</div>
           <div class="rec-meta">${parseInt(d[1])}月${parseInt(d[2])}日 · ${lbl[r.type]||r.type}</div>
         </div>
         <div class="rec-right">
           <div class="rec-amt ${aC[r.type]}">${sign[r.type]||''}${fmt(r.amount)}</div>
-          ${isAuto?'':'<div class="rec-del" onclick="delRec(\''+r.id+'\','+r.amount+',\''+r.type+'\')">刪除</div>'}
+          ${isAuto?'':`<div class="rec-del" onclick="delRec('${r.id}',${r.amount},'${r.type}')">刪除</div>`}
         </div>
       </div>`;
     }).join('')+'</div>';
@@ -768,6 +807,27 @@ function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+function openAssetModal(){
+  document.getElementById('editCash').value = Math.round(assetCache.cash);
+  document.getElementById('editInvest').value = Math.round(assetCache.invest);
+  document.getElementById('assetModal').classList.add('show');
+}
+function closeAssetModal(e){
+  if(e && e.target !== document.getElementById('assetModal')) return;
+  document.getElementById('assetModal').classList.remove('show');
+}
+async function saveAsset(){
+  const cash = parseInt(document.getElementById('editCash').value)||0;
+  const invest = parseInt(document.getElementById('editInvest').value)||0;
+  try {
+    await dbSetAsset(cash, invest);
+    assetCache = {cash, invest};
+    renderSavings();
+    document.getElementById('assetModal').classList.remove('show');
+    showToast('已更新 ✓');
+  } catch(e){ showToast('⚠️ 更新失敗'); }
 }
 
 init();
