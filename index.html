@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FinTrack">
+<title>FinTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#f2f2f7;--card:#fff;--card2:#f9f9fb;--border:rgba(0,0,0,.09);--divider:rgba(0,0,0,.05);
+  --t1:#1c1c1e;--t2:#3a3a3c;--t3:#8e8e93;--t4:#c7c7cc;
+  --red:#ff3b30;--orange:#ff9500;--green:#34c759;--blue:#007aff;--purple:#5856d6;
+  --red-bg:rgba(255,59,48,.08);--orange-bg:rgba(255,149,0,.08);--green-bg:rgba(52,199,89,.08);
+  --blue-bg:rgba(0,122,255,.08);--purple-bg:rgba(88,86,214,.08);
+  --r-sm:12px;--r-md:16px;--r-lg:22px;--r-xl:26px;
+  --safe-top:env(safe-area-inset-top,50px);--safe-bot:env(safe-area-inset-bottom,34px);
+}
+body{background:var(--bg);color:var(--t1);font-family:'Inter',-apple-system,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+.topnav{position:sticky;top:0;z-index:100;background:rgba(242,242,247,.94);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 8px) 18px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.topnav-title{font-size:20px;font-weight:800;color:var(--t1);letter-spacing:-.5px;flex-shrink:0;}
+.topnav-right{display:flex;align-items:center;gap:8px;}
+.today-pill{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:6px 13px;font-size:14px;font-weight:600;color:var(--t2);white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.month-ctrl{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:3px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.mbtn{width:30px;height:30px;border:none;background:none;color:var(--blue);font-size:18px;font-weight:700;cursor:pointer;border-radius:99px;display:flex;align-items:center;justify-content:center;}
+.mbtn:active{background:var(--bg);}
+.mlabel{font-size:13px;font-weight:700;color:var(--t1);min-width:64px;text-align:center;font-variant-numeric:tabular-nums;}
+.mlabel.now{color:var(--blue);}
+
+/* sync indicator */
+.sync-dot{width:8px;height:8px;border-radius:99px;background:var(--t4);flex-shrink:0;transition:background .3s;}
+.sync-dot.syncing{background:var(--orange);animation:pulse .8s infinite;}
+.sync-dot.ok{background:var(--green);}
+.sync-dot.err{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.content{padding:14px 16px calc(var(--safe-bot) + 90px);max-width:430px;margin:0 auto;}
+.page{display:none;}.page.active{display:block;}
+
+.alert-card{background:var(--card);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.alert-month{font-size:26px;font-weight:800;color:var(--t1);letter-spacing:-.5px;}
+.alert-sub{font-size:14px;color:var(--t3);font-weight:500;margin-top:2px;margin-bottom:12px;}
+.alert-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.achip{display:inline-flex;align-items:center;gap:4px;padding:6px 13px;border-radius:99px;font-size:13px;font-weight:700;}
+.ac-red{background:var(--red-bg);color:var(--red);animation:blink 2s infinite;}
+.ac-orange{background:var(--orange-bg);color:var(--orange);}
+.ac-green{background:var(--green-bg);color:var(--green);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.45}}
+
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat-card{background:var(--card);border-radius:var(--r-md);padding:16px 16px 14px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.stat-lbl{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.stat-val{font-size:26px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+.stat-sub{font-size:12px;color:var(--t3);margin-top:5px;font-weight:500;}
+.vred{color:var(--red);}.vgreen{color:var(--green);}.vorange{color:var(--orange);}.vblue{color:var(--blue);}.vpurple{color:var(--purple);}
+.prog{height:5px;background:var(--divider);border-radius:99px;margin-top:10px;overflow:hidden;}
+.progf{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.34,1.2,.64,1);}
+
+.sec-hd{display:flex;justify-content:space-between;align-items:center;padding:6px 4px 9px;}
+.sec-lbl{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;}
+.sec-r{font-size:13px;font-weight:600;color:var(--t3);}
+
+.pay-section{margin-bottom:16px;}
+.pay-card{background:var(--card);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);}
+.pay-item{display:flex;align-items:center;gap:13px;padding:15px 18px;border-bottom:1px solid var(--divider);cursor:pointer;transition:background .12s;position:relative;}
+.pay-item:last-child{border-bottom:none;}
+.pay-item:active{background:var(--card2);}
+.pay-item.due-today{background:rgba(255,59,48,.03);}
+.pay-item.done{opacity:.32;}
+.pay-item.done .pay-name{text-decoration:line-through;}
+.pay-item.done.due-today{background:transparent;}
+.today-tag{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:800;color:var(--red);background:var(--red-bg);padding:3px 9px;border-radius:99px;}
+.chk{width:26px;height:26px;border-radius:99px;border:2px solid var(--t4);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .18s cubic-bezier(.34,1.4,.64,1);}
+.done .chk{background:var(--green);border-color:var(--green);color:white;}
+.cat-bar{width:4px;height:36px;border-radius:99px;flex-shrink:0;}
+.bar-還款{background:var(--red);}.bar-提前還款{background:var(--orange);}.bar-投資{background:var(--green);}.bar-獎金投資{background:var(--purple);}
+.pay-mid{flex:1;min-width:0;}
+.pay-name{font-size:16px;font-weight:700;color:var(--t1);margin-bottom:2px;}
+.pay-date{font-size:13px;color:var(--t3);font-weight:500;}
+.pay-amt{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;flex-shrink:0;padding-right:4px;}
+
+.dw{border-radius:var(--r-xl);padding:20px 20px 18px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);background:var(--card);}
+.dw-0,.dw-1,.dw-2,.dw-3,.dw-4,.dw-5,.dw-6,.dw-7,.dw-8,.dw-9,.dw-10{background:var(--card);}
+.dw.cleared{opacity:.45;}
+.dw-name{font-size:18px;font-weight:800;color:var(--t1);letter-spacing:-.3px;margin-bottom:3px;}
+.dw-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:800;color:var(--t3);background:var(--bg);padding:4px 10px;border-radius:99px;margin-bottom:10px;}
+.dw-badge.cleared-badge{color:var(--green);background:var(--green-bg);}
+.dw-end{font-size:13px;color:var(--t3);font-weight:500;margin-bottom:14px;}
+.dw-nums{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--divider);padding-top:14px;}
+.dw-num{text-align:center;}
+.dw-num:not(:last-child){border-right:1px solid var(--divider);}
+.dw-num-lbl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+.dw-num-val{font-size:16px;font-weight:800;color:var(--t1);font-variant-numeric:tabular-nums;}
+.dw-prog{height:5px;background:var(--divider);border-radius:99px;margin:14px 0 5px;overflow:hidden;}
+.dw-progf{height:100%;border-radius:99px;background:var(--blue);transition:width .6s ease;}
+.dw.cleared .dw-progf{background:var(--green);}
+.dw-pct{font-size:12px;color:var(--t3);font-weight:600;text-align:right;}
+
+.asset-card{background:linear-gradient(135deg,#e8f0ff,#dce8ff,#d4e0ff);border-radius:var(--r-xl);padding:22px 22px 20px;margin-bottom:14px;box-shadow:0 6px 20px rgba(0,122,255,.12);position:relative;overflow:hidden;}
+.asset-card::before{content:'';position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:99px;background:rgba(255,255,255,.35);}
+.asset-lbl{font-size:12px;font-weight:700;color:rgba(0,0,0,.4);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
+.asset-total{font-size:40px;font-weight:900;color:var(--t1);letter-spacing:-1px;font-variant-numeric:tabular-nums;margin-bottom:18px;}
+.asset-row{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid rgba(0,0,0,.1);padding-top:16px;}
+.asset-item{text-align:center;}
+.asset-item:not(:last-child){border-right:1px solid rgba(0,0,0,.1);}
+.asset-item-lbl{font-size:10px;font-weight:700;color:rgba(0,0,0,.4);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;}
+.asset-item-val{font-size:17px;font-weight:800;color:var(--t1);font-variant-numeric:tabular-nums;}
+
+.add-card{background:var(--card);border-radius:var(--r-lg);padding:18px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.add-title{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;}
+.add-fields{display:flex;flex-direction:column;gap:10px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+input,select{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:13px 14px;font-family:'Inter',sans-serif;font-size:16px;font-weight:500;color:var(--t1);outline:none;width:100%;-webkit-appearance:none;transition:border-color .2s,background .2s;}
+input::placeholder{color:var(--t4);font-weight:400;}
+input:focus,select:focus{border-color:var(--blue);background:white;}
+.btn-add{width:100%;background:var(--blue);color:white;border:none;border-radius:var(--r-sm);padding:15px;font-family:'Inter',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .15s;box-shadow:0 4px 14px rgba(0,122,255,.28);}
+.btn-add:active{opacity:.8;}
+
+.rec-card{background:var(--card);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.07);margin-bottom:14px;}
+.rec-item{display:flex;align-items:center;gap:13px;padding:15px 18px;border-bottom:1px solid var(--divider);}
+.rec-item:last-child{border-bottom:none;}
+.rec-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ri-income{background:var(--green-bg);}.ri-expense{background:var(--red-bg);}.ri-invest{background:var(--purple-bg);}
+.rec-mid{flex:1;}
+.rec-name{font-size:16px;font-weight:700;color:var(--t1);}
+.rec-meta{font-size:13px;color:var(--t3);margin-top:2px;font-weight:500;}
+.rec-right{text-align:right;}
+.rec-amt{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;}
+.rec-del{font-size:13px;color:var(--red);font-weight:600;margin-top:3px;cursor:pointer;}
+.auto-tag{font-size:10px;font-weight:800;color:var(--blue);background:var(--blue-bg);padding:2px 6px;border-radius:99px;margin-left:6px;vertical-align:middle;}
+
+/* savings summary */
+.sav-summary{background:var(--card);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.sav-sum-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
+.sav-sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sav-sum-item{background:var(--bg);border-radius:var(--r-sm);padding:10px 12px;}
+.sav-sum-lbl{font-size:11px;font-weight:700;color:var(--t3);margin-bottom:4px;}
+.sav-sum-val{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;}
+
+/* filter tabs */
+.filter-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
+.filter-tabs::-webkit-scrollbar{display:none;}
+.ftab{padding:7px 15px;border-radius:99px;border:1.5px solid var(--border);background:var(--card);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:var(--t3);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+.ftab.active{background:var(--blue);color:white;border-color:var(--blue);}
+.ftab:active{opacity:.7;}
+
+.sec-acts{display:flex;gap:8px;}
+.btn-pill{padding:7px 14px;border-radius:99px;border:1.5px solid var(--border);background:var(--card);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--t2);cursor:pointer;}
+.btn-pill:active{background:var(--bg);}
+.btn-pill-blue{color:var(--blue);border-color:rgba(0,122,255,.2);background:var(--blue-bg);}
+
+.empty{text-align:center;padding:48px 20px;color:var(--t3);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-text{font-size:16px;font-weight:600;}
+
+/* loading overlay */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:12px;}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:99px;animation:spin .7s linear infinite;}
+.loading-text{font-size:15px;font-weight:600;color:var(--t3);}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay.hidden{display:none;}
+
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(255,255,255,.94);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--border);display:flex;padding-bottom:var(--safe-bot);}
+.tabitem{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 6px;cursor:pointer;border:none;background:none;transition:transform .15s;}
+.tabitem:active{transform:scale(.9);}
+.tab-icon{font-size:24px;line-height:1;}
+.tab-lbl{font-size:10px;font-weight:700;color:var(--t4);letter-spacing:.3px;}
+.tabitem.active .tab-lbl{color:var(--blue);}
+.tabitem:not(.active){opacity:.45;}
+
+.toast{position:fixed;bottom:calc(var(--safe-bot) + 88px);left:20px;right:20px;max-width:390px;margin:0 auto;background:rgba(28,28,30,.9);color:white;border-radius:var(--r-md);padding:14px 20px;font-size:15px;font-weight:600;text-align:center;z-index:999;transform:translateY(16px) scale(.96);opacity:0;transition:all .25s cubic-bezier(.34,1.4,.64,1);pointer-events:none;}
+.toast.show{transform:translateY(0) scale(1);opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">載入中...</div>
+</div>
+
+<div class="topnav">
+  <div class="topnav-title">FinTrack</div>
+  <div class="topnav-right">
+    <div class="sync-dot" id="syncDot" title="同步狀態"></div>
+    <div class="today-pill" id="todayPill"></div>
+    <div class="month-ctrl">
+      <button class="mbtn" onclick="changeMonth(-1)">‹</button>
+      <div class="mlabel" id="mlabel"></div>
+      <button class="mbtn" onclick="changeMonth(1)">›</button>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="page active" id="page-payments">
+    <div id="alertBox"></div>
+    <div class="stat-row" id="statRow"></div>
+    <div id="payList"></div>
+  </div>
+  <div class="page" id="page-debts">
+    <div id="debtList"></div>
+  </div>
+  <div class="page" id="page-savings">
+    <div class="asset-card">
+      <div class="asset-lbl">總資產</div>
+      <div class="asset-total" id="assetTotal">$0</div>
+      <div class="asset-row">
+        <div class="asset-item"><div class="asset-item-lbl">現金</div><div class="asset-item-val" id="assetCash">$0</div></div>
+        <div class="asset-item"><div class="asset-item-lbl">投資</div><div class="asset-item-val" id="assetInvest">$0</div></div>
+        <div class="asset-item"><div class="asset-item-lbl">本月淨增</div><div class="asset-item-val" id="assetNet">$0</div></div>
+      </div>
+    </div>
+    <div class="sav-summary">
+      <div class="sav-sum-title">本月摘要</div>
+      <div class="sav-sum-grid">
+        <div class="sav-sum-item"><div class="sav-sum-lbl">💵 收入</div><div class="sav-sum-val vgreen" id="sumIncome">$0</div></div>
+        <div class="sav-sum-item"><div class="sav-sum-lbl">💸 支出</div><div class="sav-sum-val vred" id="sumExpense">$0</div></div>
+        <div class="sav-sum-item"><div class="sav-sum-lbl">🏦 還款</div><div class="sav-sum-val vorange" id="sumRepay">$0</div></div>
+        <div class="sav-sum-item"><div class="sav-sum-lbl">📈 存股</div><div class="sav-sum-val vpurple" id="sumInvest">$0</div></div>
+      </div>
+    </div>
+    <div class="add-card">
+      <div class="add-title">新增紀錄</div>
+      <div class="add-fields">
+        <input type="text" id="recName" placeholder="說明（薪水、投資...）">
+        <div class="field-row">
+          <input type="number" id="recAmt" placeholder="金額" inputmode="numeric" min="0">
+          <select id="recType">
+            <option value="income">💵 收入</option>
+            <option value="expense">💸 支出</option>
+            <option value="invest">📈 存股</option>
+          </select>
+        </div>
+        <button class="btn-add" onclick="addRec()">新增</button>
+      </div>
+    </div>
+    <div class="sec-hd" style="padding-top:4px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="sec-lbl">本月紀錄</span>
+        <span id="recCnt" style="font-size:13px;font-weight:700;color:var(--blue);background:var(--blue-bg);padding:2px 8px;border-radius:99px;">0</span>
+      </div>
+      <div class="sec-acts">
+        <button class="btn-pill btn-pill-blue" onclick="exportCSV()">匯出</button>
+        <button class="btn-pill" onclick="clearMon()">清除</button>
+      </div>
+    </div>
+    <div class="filter-tabs" id="filterTabs">
+      <button class="ftab active" onclick="setFilter('all',this)">全部</button>
+      <button class="ftab" onclick="setFilter('income',this)">收入</button>
+      <button class="ftab" onclick="setFilter('expense',this)">支出</button>
+      <button class="ftab" onclick="setFilter('repay',this)">還款</button>
+      <button class="ftab" onclick="setFilter('invest',this)">存股</button>
+    </div>
+    <div id="recList"></div>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button class="tabitem active" onclick="switchTab('payments',this)"><span class="tab-icon">💳</span><span class="tab-lbl">繳費</span></button>
+  <button class="tabitem" onclick="switchTab('debts',this)"><span class="tab-icon">📊</span><span class="tab-lbl">債務</span></button>
+  <button class="tabitem" onclick="switchTab('savings',this)"><span class="tab-icon">💰</span><span class="tab-lbl">存款</span></button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ SUPABASE CONFIG ══ */
+const SB_URL = 'https://mhsjalgdsjzxwfkjnwlt.supabase.co';
+const SB_KEY = 'sb_publishable_nDZ1mdzovDteAki8KjuwyQ_1TrmRMBG';
+
+async function sbFetch(path, opts={}) {
+  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': `Bearer ${SB_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || '',
+      ...opts.headers
+    },
+    ...opts
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+/* ══ SUPABASE API ══ */
+async function dbGetChecks(month) {
+  const rows = await sbFetch(`payment_checks?month=eq.${month}&select=item_key,done`);
+  const map = {};
+  (rows||[]).forEach(r => map[r.item_key] = r.done);
+  return map;
+}
+
+async function dbSetCheck(month, item_key, done) {
+  setSyncDot('syncing');
+  try {
+    await sbFetch(`payment_checks?month=eq.${month}&item_key=eq.${encodeURIComponent(item_key)}`, {
+      method: 'DELETE',
+      prefer: 'return=minimal'
+    });
+    if (done) {
+      await sbFetch(`payment_checks`, {
+        method: 'POST',
+        prefer: 'return=minimal',
+        body: JSON.stringify({ month, item_key, done: true })
+      });
+    }
+    setSyncDot('ok');
+  } catch(e) {
+    setSyncDot('err');
+    throw e;
+  }
+}
+
+async function dbGetAsset() {
+  const rows = await sbFetch(`asset_state?id=eq.1&select=cash,invest`);
+  return rows && rows[0] ? rows[0] : { cash: 560000, invest: 0 };
+}
+
+async function dbSetAsset(cash, invest) {
+  setSyncDot('syncing');
+  try {
+    await sbFetch(`asset_state?id=eq.1`, {
+      method: 'PATCH',
+      prefer: 'return=minimal',
+      body: JSON.stringify({ cash, invest, updated_at: new Date().toISOString() })
+    });
+    setSyncDot('ok');
+  } catch(e) { setSyncDot('err'); throw e; }
+}
+
+async function dbGetRecords(month) {
+  const rows = await sbFetch(`savings_records?month=eq.${month}&select=id,name,amount,type,date,auto&order=date.desc`);
+  return rows || [];
+}
+
+async function dbAddRecord(month, rec) {
+  setSyncDot('syncing');
+  try {
+    const rows = await sbFetch(`savings_records`, {
+      method: 'POST',
+      prefer: 'return=representation',
+      body: JSON.stringify({ month, ...rec })
+    });
+    setSyncDot('ok');
+    return rows && rows[0];
+  } catch(e) { setSyncDot('err'); throw e; }
+}
+
+async function dbDelRecord(id) {
+  setSyncDot('syncing');
+  try {
+    await sbFetch(`savings_records?id=eq.${id}`, {
+      method: 'DELETE',
+      prefer: 'return=minimal'
+    });
+    setSyncDot('ok');
+  } catch(e) { setSyncDot('err'); throw e; }
+}
+
+async function dbGetAllRecords() {
+  const rows = await sbFetch(`savings_records?select=id,month,name,amount,type,date&order=date.asc`);
+  return rows || [];
+}
+
+/* ══ EVENTS DATA ══ */
+const EVENTS=[{"date":"2026-03-05","name":"中租","amount":3054,"category":"還款"},{"date":"2026-04-05","name":"中租","amount":3054,"category":"還款"},{"date":"2026-05-05","name":"中租","amount":3054,"category":"還款"},{"date":"2026-06-05","name":"中租","amount":3054,"category":"還款"},{"date":"2026-07-05","name":"中租","amount":3054,"category":"還款"},{"date":"2026-08-05","name":"中租","amount":3054,"category":"還款"},{"date":"2026-09-05","name":"中租","amount":3054,"category":"還款"},{"date":"2026-10-05","name":"中租","amount":3054,"category":"還款"},{"date":"2026-03-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-04-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-05-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-06-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-07-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-08-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-09-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-10-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-11-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-12-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-01-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-02-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-03-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-04-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-05-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-06-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-07-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-08-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-09-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-10-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-11-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2027-12-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2028-01-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2028-02-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2028-03-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2028-04-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2028-05-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2028-06-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2028-07-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2028-08-05","name":"二十一","amount":6286,"category":"還款"},{"date":"2026-03-05","name":"BUNNY","amount":4500,"category":"還款"},{"date":"2026-04-05","name":"BUNNY","amount":4500,"category":"還款"},{"date":"2026-05-05","name":"BUNNY","amount":4500,"category":"還款"},{"date":"2026-06-05","name":"BUNNY","amount":4500,"category":"還款"},{"date":"2026-07-05","name":"BUNNY","amount":4500,"category":"還款"},{"date":"2026-03-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-04-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-05-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-06-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-07-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-08-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-09-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-10-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-11-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-12-05","name":"JET","amount":2033,"category":"還款"},{"date":"2027-01-05","name":"JET","amount":2033,"category":"還款"},{"date":"2027-02-05","name":"JET","amount":2033,"category":"還款"},{"date":"2027-03-05","name":"JET","amount":2033,"category":"還款"},{"date":"2027-04-05","name":"JET","amount":2033,"category":"還款"},{"date":"2027-05-05","name":"JET","amount":2033,"category":"還款"},{"date":"2027-06-05","name":"JET","amount":2033,"category":"還款"},{"date":"2027-07-05","name":"JET","amount":2033,"category":"還款"},{"date":"2027-08-05","name":"JET","amount":2033,"category":"還款"},{"date":"2026-03-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-04-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-05-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-06-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-07-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-08-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-09-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-10-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-11-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-12-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2027-01-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2027-02-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2027-03-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2027-04-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2027-05-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2027-06-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2027-07-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2027-08-05","name":"JUJI","amount":2580,"category":"還款"},{"date":"2026-03-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-04-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-05-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-06-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-07-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-08-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-09-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-10-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-11-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-12-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-01-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-02-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-03-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-04-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-05-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-06-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-07-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-08-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-09-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2027-10-05","name":"銀角手機","amount":3300,"category":"還款"},{"date":"2026-03-05","name":"銀角平板","amount":3536,"category":"還款"},{"date":"2026-04-05","name":"銀角平板","amount":3536,"category":"還款"},{"date":"2026-05-05","name":"銀角平板","amount":3536,"category":"還款"},{"date":"2026-03-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-04-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-05-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-06-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-07-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-08-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-09-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-10-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-11-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-12-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-01-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-02-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-03-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-04-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-05-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-06-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-07-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-08-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-09-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-10-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-11-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2027-12-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-01-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-02-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-03-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-04-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-05-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-06-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-07-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-08-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-09-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-10-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-11-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2028-12-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-01-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-02-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-03-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-04-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-05-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-06-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-07-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-08-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-09-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-10-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-11-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2029-12-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-01-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-02-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-03-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-04-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-05-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-06-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-07-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-08-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-09-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-10-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-11-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2030-12-05","name":"Line Bank","amount":2233,"category":"還款"},{"date":"2026-03-05","name":"喬美","amount":3300,"category":"還款"},{"date":"2026-04-05","name":"喬美","amount":3300,"category":"還款"},{"date":"2026-05-05","name":"喬美","amount":3300,"category":"還款"},{"date":"2026-06-05","name":"喬美","amount":3300,"category":"還款"},{"date":"2026-07-05","name":"喬美","amount":3300,"category":"還款"},{"date":"2026-03-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-04-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-05-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-06-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-07-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-08-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-09-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-10-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-11-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-12-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-01-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-02-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-03-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-04-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-05-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-06-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-07-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-08-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-09-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2027-10-05","name":"信用卡費","amount":3900,"category":"還款"},{"date":"2026-03-05","name":"渣打","amount":16308,"category":"還款"},{"date":"2026-04-05","name":"渣打","amount":16308,"category":"還款"},{"date":"2026-05-05","name":"渣打","amount":16308,"category":"還款"},{"date":"2026-06-05","name":"渣打","amount":16308,"category":"還款"},{"date":"2026-07-05","name":"渣打","amount":16308,"category":"還款"},{"date":"2026-08-05","name":"渣打","amount":16308,"category":"還款"},{"date":"2026-09-05","name":"渣打","amount":15186,"category":"還款"},{"date":"2026-10-05","name":"渣打","amount":15186,"category":"還款"},{"date":"2026-11-05","name":"渣打","amount":15186,"category":"還款"},{"date":"2026-12-05","name":"渣打","amount":15186,"category":"還款"},{"date":"2027-01-05","name":"渣打","amount":15186,"category":"還款"},{"date":"2027-02-05","name":"渣打","amount":15186,"category":"還款"},{"date":"2027-03-05","name":"渣打","amount":14017,"category":"還款"},{"date":"2027-04-05","name":"渣打","amount":14017,"category":"還款"},{"date":"2027-05-05","name":"渣打","amount":14017,"category":"還款"},{"date":"2027-06-05","name":"渣打","amount":14017,"category":"還款"},{"date":"2027-07-05","name":"渣打","amount":14017,"category":"還款"},{"date":"2027-08-05","name":"渣打","amount":14017,"category":"還款"},{"date":"2027-09-05","name":"渣打","amount":12793,"category":"還款"},{"date":"2027-10-05","name":"渣打","amount":12793,"category":"還款"},{"date":"2027-11-05","name":"渣打","amount":12793,"category":"還款"},{"date":"2027-12-05","name":"渣打","amount":12793,"category":"還款"},{"date":"2028-01-05","name":"渣打","amount":12793,"category":"還款"},{"date":"2028-02-05","name":"渣打","amount":12793,"category":"還款"},{"date":"2028-03-05","name":"渣打","amount":11510,"category":"還款"},{"date":"2028-04-05","name":"渣打","amount":11510,"category":"還款"},{"date":"2028-05-05","name":"渣打","amount":11510,"category":"還款"},{"date":"2028-06-05","name":"渣打","amount":11510,"category":"還款"},{"date":"2028-07-05","name":"渣打","amount":11510,"category":"還款"},{"date":"2028-08-05","name":"渣打","amount":11510,"category":"還款"},{"date":"2028-09-05","name":"渣打","amount":10157,"category":"還款"},{"date":"2028-10-05","name":"渣打","amount":10157,"category":"還款"},{"date":"2028-11-05","name":"渣打","amount":10157,"category":"還款"},{"date":"2028-12-05","name":"渣打","amount":10157,"category":"還款"},{"date":"2029-01-05","name":"渣打","amount":10157,"category":"還款"},{"date":"2029-02-05","name":"渣打","amount":10157,"category":"還款"},{"date":"2029-03-05","name":"渣打","amount":8726,"category":"還款"},{"date":"2029-04-05","name":"渣打","amount":8726,"category":"還款"},{"date":"2029-05-05","name":"渣打","amount":8726,"category":"還款"},{"date":"2029-06-05","name":"渣打","amount":8726,"category":"還款"},{"date":"2029-07-05","name":"渣打","amount":8726,"category":"還款"},{"date":"2029-08-05","name":"渣打","amount":8726,"category":"還款"},{"date":"2029-09-05","name":"渣打","amount":7205,"category":"還款"},{"date":"2029-10-05","name":"渣打","amount":7205,"category":"還款"},{"date":"2029-11-05","name":"渣打","amount":7205,"category":"還款"},{"date":"2029-12-05","name":"渣打","amount":7205,"category":"還款"},{"date":"2030-01-05","name":"渣打","amount":7205,"category":"還款"},{"date":"2030-02-05","name":"渣打","amount":7205,"category":"還款"},{"date":"2030-03-05","name":"渣打","amount":5577,"category":"還款"},{"date":"2030-04-05","name":"渣打","amount":5577,"category":"還款"},{"date":"2030-05-05","name":"渣打","amount":5577,"category":"還款"},{"date":"2030-06-05","name":"渣打","amount":5577,"category":"還款"},{"date":"2030-07-05","name":"渣打","amount":5577,"category":"還款"},{"date":"2030-08-05","name":"渣打","amount":5577,"category":"還款"},{"date":"2030-09-05","name":"渣打","amount":3824,"category":"還款"},{"date":"2030-10-05","name":"渣打","amount":3824,"category":"還款"},{"date":"2030-11-05","name":"渣打","amount":3824,"category":"還款"},{"date":"2030-12-05","name":"渣打","amount":3824,"category":"還款"},{"date":"2031-01-05","name":"渣打","amount":3824,"category":"還款"},{"date":"2031-02-05","name":"渣打","amount":3824,"category":"還款"},{"date":"2031-03-05","name":"渣打","amount":1920,"category":"還款"},{"date":"2031-04-05","name":"渣打","amount":1920,"category":"還款"},{"date":"2031-05-05","name":"渣打","amount":1920,"category":"還款"},{"date":"2031-06-05","name":"渣打","amount":1920,"category":"還款"},{"date":"2031-07-05","name":"渣打","amount":1920,"category":"還款"},{"date":"2031-08-05","name":"渣打","amount":1920,"category":"還款"},{"date":"2026-08-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2027-02-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2027-08-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2028-02-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2028-08-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2029-02-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2029-08-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2030-02-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2030-08-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2031-02-10","name":"渣打提前還款","amount":100000,"category":"提前還款"},{"date":"2031-08-10","name":"渣打提前還款","amount":91909,"category":"提前還款"},{"date":"2026-03-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2026-04-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2026-05-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2026-06-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2026-07-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2026-08-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2026-09-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2026-10-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2026-11-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2026-12-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2027-01-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2027-02-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2027-03-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2027-04-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2027-05-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2027-06-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2027-06-15","name":"ETF投入","amount":10000,"category":"投資"},{"date":"2027-07-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2027-07-15","name":"ETF投入","amount":10000,"category":"投資"},{"date":"2027-08-15","name":"股票投入","amount":10000,"category":"投資"},{"date":"2027-08-15","name":"ETF投入","amount":10000,"category":"投資"},{"date":"2026-04-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2026-07-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2026-08-20","name":"八月獎金投資","amount":100000,"category":"獎金投資"},{"date":"2026-10-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2027-01-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2027-02-20","name":"年終獎金投資","amount":150000,"category":"獎金投資"},{"date":"2027-04-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2027-07-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2027-08-20","name":"八月獎金投資","amount":100000,"category":"獎金投資"},{"date":"2027-10-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2028-01-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2028-02-20","name":"年終獎金投資","amount":150000,"category":"獎金投資"},{"date":"2028-04-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2028-07-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2028-08-20","name":"八月獎金投資","amount":100000,"category":"獎金投資"},{"date":"2028-10-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2029-01-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2029-02-20","name":"年終獎金投資","amount":150000,"category":"獎金投資"},{"date":"2029-04-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2029-07-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2029-08-20","name":"八月獎金投資","amount":100000,"category":"獎金投資"},{"date":"2029-10-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2030-01-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2030-02-20","name":"年終獎金投資","amount":150000,"category":"獎金投資"},{"date":"2030-04-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2030-07-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2030-08-20","name":"八月獎金投資","amount":100000,"category":"獎金投資"},{"date":"2030-10-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2031-01-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2031-02-20","name":"年終獎金投資","amount":150000,"category":"獎金投資"},{"date":"2031-04-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2031-07-20","name":"季獎金投資","amount":30000,"category":"獎金投資"},{"date":"2031-08-20","name":"八月獎金投資","amount":100000,"category":"獎金投資"},{"date":"2031-10-20","name":"季獎金投資","amount":30000,"category":"獎金投資"}];
+
+const DEBTS=[
+  {name:'中租',monthly:3054,start:'2026-03',end:'2026-10'},
+  {name:'二十一',monthly:6286,start:'2026-03',end:'2028-08'},
+  {name:'BUNNY',monthly:4500,start:'2026-03',end:'2026-07'},
+  {name:'JET',monthly:2033,start:'2026-03',end:'2027-08'},
+  {name:'JUJI',monthly:2580,start:'2026-03',end:'2027-08'},
+  {name:'銀角手機',monthly:3300,start:'2026-03',end:'2027-10'},
+  {name:'銀角平板',monthly:3536,start:'2026-03',end:'2026-05'},
+  {name:'Line Bank',monthly:2233,start:'2026-03',end:'2030-12'},
+  {name:'喬美',monthly:3300,start:'2026-03',end:'2026-07'},
+  {name:'信用卡費',monthly:3900,start:'2026-03',end:'2027-10'},
+  {name:'渣打',monthly:16308,start:'2026-03',end:'2031-08',prepay:100000},
+];
+
+const WD=['日','一','二','三','四','五','六'];
+const TODAY=new Date();
+let cy=TODAY.getFullYear(),cm=TODAY.getMonth()+1;
+if(cy<2026){cy=2026;cm=3;}
+
+const fmt=n=>'$'+Math.abs(Math.round(n)).toLocaleString('zh-TW');
+const mkey=(y,m)=>`${y}-${String(m).padStart(2,'0')}`;
+const ikey=e=>`${e.date}_${e.name}`;
+const isCurr=()=>cy===TODAY.getFullYear()&&cm===TODAY.getMonth()+1;
+
+// in-memory cache
+let ckCache={};   // checks
+let assetCache={cash:560000,invest:0};
+let recsCache=[];  // current month records
+let payRecMap={};  // k -> savings record id (for reversal)
+
+function setSyncDot(state){
+  const d=document.getElementById('syncDot');
+  d.className='sync-dot '+state;
+}
+
+function totalP(d){const[sy,sm]=d.start.split('-').map(Number),[ey,em]=d.end.split('-').map(Number);return(ey-sy)*12+(em-sm)+1;}
+function paidP(d,y,m){const[sy,sm]=d.start.split('-').map(Number);return Math.max(0,Math.min(totalP(d),(y-sy)*12+(m-sm)));}
+function remAmt(d,y,m){return Math.max(0,(totalP(d)-paidP(d,y,m))*d.monthly);}
+
+/* ── INIT ── */
+async function init(){
+  document.getElementById('todayPill').textContent=`${TODAY.getMonth()+1}月${TODAY.getDate()}日 週${WD[TODAY.getDay()]}`;
+  updateML();
+  try {
+    setSyncDot('syncing');
+    const [asset, checks] = await Promise.all([
+      dbGetAsset(),
+      dbGetChecks(mkey(cy,cm))
+    ]);
+    assetCache = asset;
+    ckCache = checks;
+    setSyncDot('ok');
+  } catch(e) {
+    setSyncDot('err');
+    showToast('⚠️ 無法連線，使用離線模式');
+  }
+  document.getElementById('loadingOverlay').classList.add('hidden');
+  renderPayments();
+  setInterval(()=>{const n=new Date();if(n.getDate()!==TODAY.getDate()||n.getMonth()!==TODAY.getMonth())location.reload();},60000);
+}
+
+function updateML(){
+  const el=document.getElementById('mlabel');
+  el.textContent=`${cy}/${String(cm).padStart(2,'0')}`;
+  el.className='mlabel'+(isCurr()?' now':'');
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tabitem').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='savings') initSavings();
+  if(name==='debts') renderDebts();
+}
+
+async function changeMonth(d){
+  cm+=d;if(cm>12){cm=1;cy++;}if(cm<1){cm=12;cy--;}
+  updateML();
+  try {
+    setSyncDot('syncing');
+    ckCache = await dbGetChecks(mkey(cy,cm));
+    setSyncDot('ok');
+  } catch(e){ setSyncDot('err'); }
+  renderPayments();
+  if(document.getElementById('page-debts').classList.contains('active')) renderDebts();
+}
+
+/* ── PAYMENTS ── */
+function renderPayments(){
+  const mk=mkey(cy,cm);
+  const evts=EVENTS.filter(e=>e.date.startsWith(mk));
+  const rep=evts.filter(e=>e.category==='還款'||e.category==='提前還款');
+  const tR=rep.reduce((s,e)=>s+e.amount,0),tA=evts.reduce((s,e)=>s+e.amount,0);
+  const pR=rep.filter(e=>ckCache[ikey(e)]).reduce((s,e)=>s+e.amount,0);
+  const pA=evts.filter(e=>ckCache[ikey(e)]).reduce((s,e)=>s+e.amount,0);
+  const pct=tA>0?Math.round(pA/tA*100):0;
+  const td=TODAY.getDate();
+  const alerts=[];
+  if(isCurr()){
+    evts.forEach(e=>{
+      if(ckCache[ikey(e)])return;
+      const diff=parseInt(e.date.split('-')[2])-td;
+      if(diff===0)alerts.push({...e,lv:'today'});
+      else if(diff>0&&diff<=3)alerts.push({...e,diff,lv:'soon'});
+    });
+  }
+  let chips='';
+  if(isCurr()&&pct===100)chips=`<span class="achip ac-green">🎉 本月全部完成</span>`;
+  alerts.slice(0,3).forEach(a=>{
+    chips+=`<span class="achip ${a.lv==='today'?'ac-red':'ac-orange'}">${a.lv==='today'?'🔔 今天到期':'⏰ '+a.diff+'天後'}：${a.name}</span>`;
+  });
+  document.getElementById('alertBox').innerHTML=`
+    <div class="alert-card">
+      <div class="alert-month">${cy}年${cm}月</div>
+      <div class="alert-sub">${isCurr()?`今天 ${TODAY.getDate()}日 週${WD[TODAY.getDay()]}`:''}</div>
+      ${chips?`<div class="alert-chips">${chips}</div>`:''}
+    </div>`;
+  document.getElementById('statRow').innerHTML=`
+    <div class="stat-card">
+      <div class="stat-lbl">已繳完成</div>
+      <div class="stat-val vgreen">${fmt(pA)}</div>
+      <div class="prog"><div class="progf" style="width:${pct}%;background:var(--green)"></div></div>
+      <div class="stat-sub">${pct}%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">還款待繳</div>
+      <div class="stat-val ${tR-pR>0?'vred':'vgreen'}">${fmt(tR-pR)}</div>
+      <div class="stat-sub">${rep.filter(e=>!ckCache[ikey(e)]).length} 項未完成</div>
+    </div>`;
+  const order=['還款','提前還款','投資','獎金投資'];
+  const glbl={'還款':'每月還款','提前還款':'提前還款','投資':'投資扣款','獎金投資':'獎金投資'};
+  const aC={'還款':'vred','提前還款':'vorange','投資':'vgreen','獎金投資':'vpurple'};
+  let html='';
+  order.forEach(cat=>{
+    const items=evts.filter(e=>e.category===cat).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!items.length)return;
+    const ct=items.reduce((s,e)=>s+e.amount,0);
+    const cp=items.filter(e=>ckCache[ikey(e)]).reduce((s,e)=>s+e.amount,0);
+    html+=`<div class="pay-section">
+      <div class="sec-hd"><span class="sec-lbl">${glbl[cat]}</span><span class="sec-r">${fmt(ct)} <span style="color:var(--green)">${fmt(cp)} ✓</span></span></div>
+      <div class="pay-card">`;
+    items.forEach(e=>{
+      const k=ikey(e),done=!!ckCache[k];
+      const eDay=parseInt(e.date.split('-')[2]),diff=eDay-td;
+      const isToday=isCurr()&&diff===0,isSoon=isCurr()&&diff>0&&diff<=3;
+      const cls=done?'done':isToday?'due-today':isSoon?'due-soon':'';
+      html+=`<div class="pay-item ${cls}" onclick="togglePay('${k}','${e.date}','${e.name}')">
+        <div class="chk">${done?'✓':''}</div>
+        <div class="cat-bar bar-${cat}"></div>
+        <div class="pay-mid"><div class="pay-name">${e.name}</div><div class="pay-date">${cm}月${eDay}日</div></div>
+        <div class="pay-amt ${aC[cat]}">${fmt(e.amount)}</div>
+        ${isToday&&!done?'<span class="today-tag">今天</span>':''}
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  if(!html)html=`<div class="empty"><div class="empty-icon">🎉</div><div class="empty-text">本月沒有項目</div></div>`;
+  document.getElementById('payList').innerHTML=html;
+}
+
+async function togglePay(k, date, name){
+  const newDone = !ckCache[k];
+  // find the event to get amount & category
+  const evt = EVENTS.find(e => ikey(e) === k);
+  if (!evt) return;
+  const amt = evt.amount;
+  const isRepay = evt.category === '還款' || evt.category === '提前還款';
+
+  ckCache[k] = newDone;
+  renderPayments();
+  try {
+    const mk = mkey(cy, cm);
+    if (newDone) {
+      // 1. write check
+      await dbSetCheck(mk, k, true);
+      // 2. deduct cash (還款/提前還款 also deducts)
+      const newCash = assetCache.cash - amt;
+      await dbSetAsset(newCash, assetCache.invest);
+      assetCache = { ...assetCache, cash: newCash };
+      // 3. add savings record (type: repay for 還款, invest for 投資/獎金投資)
+      const recType = isRepay ? 'repay' : 'invest';
+      const newRec = await dbAddRecord(mk, { name, amount: amt, type: recType, date, auto: true });
+      if (newRec) {
+        // store the record id in a map for reversal
+        payRecMap[k] = newRec.id;
+      }
+      // refresh savings if on savings tab
+      if (document.getElementById('page-savings').classList.contains('active')) { recsCache = await dbGetRecords(mk); renderSavings(); }
+      showToast('已完成 ✓');
+    } else {
+      // reversal: delete check, restore cash, delete savings record
+      await dbSetCheck(mk, k, false);
+      const newCash = assetCache.cash + amt;
+      await dbSetAsset(newCash, assetCache.invest);
+      assetCache = { ...assetCache, cash: newCash };
+      if (payRecMap[k]) {
+        await dbDelRecord(payRecMap[k]);
+        delete payRecMap[k];
+      } else {
+        // try to find by name+date in recsCache or fetch
+        const allRecs = await dbGetRecords(mk);
+        const found = allRecs.find(r => r.name === name && r.date === date);
+        if (found) await dbDelRecord(found.id);
+      }
+      if (document.getElementById('page-savings').classList.contains('active')) { recsCache = await dbGetRecords(mk); renderSavings(); }
+      showToast('已取消');
+    }
+  } catch(e){
+    ckCache[k] = !newDone; // rollback
+    renderPayments();
+    showToast('⚠️ 同步失敗');
+  }
+}
+
+/* ── DEBTS ── */
+function renderDebts(){
+  const now=mkey(cy,cm);
+  let html='';
+  DEBTS.forEach((d,i)=>{
+    const cleared=now>d.end;
+    const tp=totalP(d),pp=paidP(d,cy,cm),rem=remAmt(d,cy,cm);
+    const pct=Math.min(100,Math.round(pp/tp*100)),left=tp-pp;
+    html+=`<div class="dw dw-${i} ${cleared?'cleared':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+        <div class="dw-name">${d.name}</div>
+        <span class="dw-badge${cleared?' cleared-badge':''}">${cleared?'✓ 還清':'剩 '+left+' 期'}</span>
+      </div>
+      <div class="dw-end">還清日：${d.end}　月付：${fmt(d.monthly)}</div>
+      <div class="dw-nums">
+        <div class="dw-num"><div class="dw-num-lbl">已繳期數</div><div class="dw-num-val">${pp} 期</div></div>
+        <div class="dw-num"><div class="dw-num-lbl">剩餘金額</div><div class="dw-num-val">${fmt(rem)}</div></div>
+        <div class="dw-num"><div class="dw-num-lbl">進度</div><div class="dw-num-val">${pct}%</div></div>
+      </div>
+      <div class="dw-prog"><div class="dw-progf" style="width:${pct}%"></div></div>
+      <div class="dw-pct">${pct}% 已還清</div>
+    </div>`;
+  });
+  document.getElementById('debtList').innerHTML=html;
+}
+
+/* ── SAVINGS ── */
+async function initSavings(){
+  setSyncDot('syncing');
+  try {
+    const [asset, recs] = await Promise.all([
+      dbGetAsset(),
+      dbGetRecords(mkey(cy,cm))
+    ]);
+    assetCache = asset;
+    recsCache = recs;
+    setSyncDot('ok');
+  } catch(e){ setSyncDot('err'); showToast('⚠️ 載入失敗'); }
+  renderSavings();
+}
+
+let savFilter = 'all';
+function setFilter(f, el) {
+  savFilter = f;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderSavings();
+}
+
+function renderSavings(){
+  const recs=recsCache;
+  const mInc=recs.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
+  const mExp=recs.filter(r=>r.type==='expense').reduce((s,r)=>s+r.amount,0);
+  const mInv=recs.filter(r=>r.type==='invest').reduce((s,r)=>s+r.amount,0);
+  const mRepay=recs.filter(r=>r.type==='repay').reduce((s,r)=>s+r.amount,0);
+  const mNet=mInc-mExp-mInv-mRepay;
+  document.getElementById('assetTotal').textContent=fmt(assetCache.cash+assetCache.invest);
+  document.getElementById('assetCash').textContent=fmt(assetCache.cash);
+  document.getElementById('assetInvest').textContent=fmt(assetCache.invest);
+  const an=document.getElementById('assetNet');
+  an.textContent=(mNet>=0?'+':'')+fmt(mNet);
+  an.style.color=mNet>=0?'var(--green)':'var(--red)';
+  // summary
+  document.getElementById('sumIncome').textContent=fmt(mInc);
+  document.getElementById('sumExpense').textContent=fmt(mExp);
+  document.getElementById('sumRepay').textContent=fmt(mRepay);
+  document.getElementById('sumInvest').textContent=fmt(mInv);
+  // filter
+  const filtered = savFilter==='all' ? recs : recs.filter(r=>r.type===savFilter);
+  document.getElementById('recCnt').textContent=recs.length;
+  if(!recs.length){
+    document.getElementById('recList').innerHTML=`<div class="empty"><div class="empty-icon">📝</div><div class="empty-text">本月尚無紀錄</div></div>`;
+    return;
+  }
+  if(!filtered.length){
+    document.getElementById('recList').innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">此類別無紀錄</div></div>`;
+    return;
+  }
+  const icons={income:'💵',expense:'💸',invest:'📈',repay:'🏦'};
+  const lbl={income:'收入',expense:'支出',invest:'存股',repay:'還款'};
+  const aC={income:'vgreen',expense:'vred',invest:'vpurple',repay:'vorange'};
+  const sign={income:'+',expense:'-',invest:'-',repay:'-'};
+  document.getElementById('recList').innerHTML=`<div class="rec-card">`+
+    filtered.map(r=>{
+      const d=r.date.split('-');
+      const isAuto = r.auto === true || r.auto === 'true';
+      return `<div class="rec-item">
+        <div class="rec-icon ri-${r.type==='repay'?'expense':r.type}">${icons[r.type]||'📌'}</div>
+        <div class="rec-mid">
+          <div class="rec-name">${r.name}${isAuto?'<span class="auto-tag">自動</span>':''}</div>
+          <div class="rec-meta">${parseInt(d[1])}月${parseInt(d[2])}日 · ${lbl[r.type]||r.type}</div>
+        </div>
+        <div class="rec-right">
+          <div class="rec-amt ${aC[r.type]}">${sign[r.type]||''}${fmt(r.amount)}</div>
+          ${isAuto?'':'<div class="rec-del" onclick="delRec(\''+r.id+'\','+r.amount+',\''+r.type+'\')">刪除</div>'}
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+}
+
+async function addRec(){
+  const name=document.getElementById('recName').value.trim();
+  const amt=parseInt(document.getElementById('recAmt').value);
+  const type=document.getElementById('recType').value;
+  if(!name||!amt||amt<=0){showToast('請填寫說明和金額');return;}
+  const mk=mkey(cy,cm);
+  const dateStr=`${cy}-${String(cm).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
+  // update asset
+  let {cash,invest}=assetCache;
+  if(type==='income') cash+=amt;
+  else if(type==='expense'||type==='repay') cash-=amt;
+  else{cash-=amt;invest+=amt;}
+  try {
+    const [newRec] = await Promise.all([
+      dbAddRecord(mk,{name,amount:amt,type,date:dateStr}),
+      dbSetAsset(cash,invest)
+    ]);
+    assetCache={cash,invest};
+    recsCache.unshift(newRec||{id:Date.now(),name,amount:amt,type,date:dateStr});
+    document.getElementById('recName').value='';
+    document.getElementById('recAmt').value='';
+    renderSavings();
+    showToast('已新增 ✓');
+  } catch(e){ showToast('⚠️ 新增失敗'); }
+}
+
+async function delRec(id,amt,type){
+  let {cash,invest}=assetCache;
+  if(type==='income') cash-=amt;
+  else if(type==='expense'||type==='repay') cash+=amt;
+  else{cash+=amt;invest-=amt;}
+  try {
+    await Promise.all([dbDelRecord(id), dbSetAsset(cash,invest)]);
+    assetCache={cash,invest};
+    recsCache=recsCache.filter(r=>String(r.id)!==String(id));
+    renderSavings();
+    showToast('已刪除');
+  } catch(e){ showToast('⚠️ 刪除失敗'); }
+}
+
+async function clearMon(){
+  if(!confirm('清除本月所有紀錄？'))return;
+  let {cash,invest}=assetCache;
+  recsCache.forEach(r=>{
+    if(r.type==='income') cash-=r.amount;
+    else if(r.type==='expense'||r.type==='repay') cash+=r.amount;
+    else{cash+=r.amount;invest-=r.amount;}
+  });
+  try {
+    await Promise.all([
+      ...recsCache.map(r=>dbDelRecord(r.id)),
+      dbSetAsset(cash,invest)
+    ]);
+    assetCache={cash,invest};recsCache=[];
+    renderSavings();showToast('已清除');
+  } catch(e){ showToast('⚠️ 清除失敗'); }
+}
+
+async function exportCSV(){
+  try {
+    const all = await dbGetAllRecords();
+    const tMap={income:'收入',expense:'支出',invest:'投資'};
+    let rows=['\uFEFF日期,說明,類型,金額'];
+    all.forEach(r=>rows.push(`${r.date},${r.name},${tMap[r.type]||r.type},${r.amount}`));
+    const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`fintrack_all.csv`;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+    showToast('已匯出 ✓');
+  } catch(e){ showToast('⚠️ 匯出失敗'); }
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+init();
+</script>
+</body>
+</html>
