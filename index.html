@@ -266,9 +266,7 @@ input:focus,select:focus{border-color:var(--blue);background:white;}
 </head>
 <body>
 
-<!-- Gesture zones -->
-<div class="gesture-zone" id="gz-tr"></div>
-<div class="gesture-zone" id="gz-bl"></div>
+<!-- No visible gesture zones needed - logo tap used instead -->
 <div id="unlockFlash"></div>
 
 <!-- FinTrack layer (hidden) -->
@@ -917,7 +915,7 @@ init();
 <!-- ══════════ REX LAB UI ══════════ -->
 <div id="rexlabLayer">
 <nav class="nav">
-  <div class="nav-logo">
+  <div class="nav-logo" id="logoTap" style="cursor:pointer;">
     <svg class="logo-skull" viewBox="0 0 42 42" fill="none">
       <circle cx="21" cy="21" r="21" fill="#1a1a1a"/>
       <ellipse cx="21" cy="19" rx="12" ry="11" fill="#f5c400"/>
