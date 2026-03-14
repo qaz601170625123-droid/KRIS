@@ -4,11 +4,84 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="FinTrack">
-<title>FinTrack</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="REX LAB">
+<title>REX LAB</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- REX LAB styles -->
 <style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --black:#0a0a0a;--yellow:#f5c400;--yellow2:#ffd700;--white:#ffffff;--gray:#1a1a1a;--gray2:#2a2a2a;--gray3:#888;
+  --safe-top:env(safe-area-inset-top,44px);--safe-bot:env(safe-area-inset-bottom,34px);
+}
+html,body{background:var(--black);color:var(--white);font-family:'Noto Sans TC',-apple-system,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+.nav{position:sticky;top:0;z-index:200;background:var(--black);padding:calc(var(--safe-top) + 10px) 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--yellow);}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.logo-skull{width:42px;height:42px;}
+.logo-text{font-size:22px;font-weight:900;color:var(--yellow);letter-spacing:1px;}
+.nav-menu{width:36px;height:36px;display:flex;flex-direction:column;justify-content:center;gap:6px;cursor:pointer;padding:4px;}
+.nav-menu span{display:block;height:2.5px;background:var(--white);border-radius:2px;}
+.marquee-wrap{background:var(--gray2);padding:10px 0;overflow:hidden;white-space:nowrap;border-bottom:1px solid #333;}
+.marquee-inner{display:inline-block;animation:marquee 18s linear infinite;}
+.marquee-inner span{font-size:13px;font-weight:700;color:var(--yellow);padding:0 32px;}
+.marquee-inner em{color:#fff;font-style:normal;}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.hero-ann{margin:14px 16px;border:2px solid var(--yellow);border-radius:14px;background:var(--gray);padding:16px;display:flex;gap:14px;align-items:flex-start;}
+.hero-mascot-placeholder{width:70px;height:80px;border-radius:8px;background:var(--gray2);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;}
+.hero-ann-brand{display:inline-block;background:var(--yellow);color:var(--black);font-size:11px;font-weight:900;letter-spacing:1px;padding:3px 10px;border-radius:4px;margin-bottom:8px;}
+.hero-ann-text{font-size:13px;color:#ddd;line-height:1.6;font-weight:500;}
+.hero-ann-text strong{color:var(--yellow);}
+.tabs{display:flex;gap:8px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;background:var(--gray2);border:1.5px solid #333;color:#bbb;font-size:13px;font-weight:700;padding:7px 18px;border-radius:99px;cursor:pointer;white-space:nowrap;}
+.tab.active{background:var(--yellow);color:var(--black);border-color:var(--yellow);}
+.sec-hd{display:flex;align-items:center;gap:10px;padding:6px 16px 12px;}
+.sec-hd-bar{width:4px;height:20px;background:var(--yellow);border-radius:2px;}
+.sec-hd-label{font-size:15px;font-weight:900;letter-spacing:.5px;}
+.sec-hd-badge{margin-left:auto;background:var(--yellow);color:var(--black);font-size:11px;font-weight:900;padding:3px 10px;border-radius:99px;}
+.products-scroll{display:flex;gap:12px;padding:0 16px 16px;overflow-x:auto;scrollbar-width:none;}
+.products-scroll::-webkit-scrollbar{display:none;}
+.prod-card{flex-shrink:0;width:175px;background:var(--gray);border:1px solid #2a2a2a;border-radius:14px;overflow:hidden;position:relative;}
+.prod-badge{position:absolute;top:10px;left:10px;z-index:2;font-size:11px;font-weight:900;padding:4px 10px;border-radius:99px;}
+.badge-main{background:var(--yellow);color:var(--black);}
+.badge-new{background:#ff3b30;color:#fff;}
+.badge-limit{background:#5856d6;color:#fff;}
+.prod-img-placeholder{width:100%;height:150px;background:linear-gradient(135deg,#1e1e1e,#2a2a2a);display:flex;align-items:center;justify-content:center;font-size:40px;}
+.prod-info{padding:12px 12px 14px;}
+.prod-name{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.4;}
+.prod-sub{font-size:11px;color:var(--gray3);margin-bottom:10px;font-weight:500;}
+.prod-prices{display:flex;align-items:baseline;gap:6px;margin-bottom:10px;}
+.prod-price{font-size:20px;font-weight:900;color:var(--yellow);}
+.prod-price::before{content:'$';font-size:14px;}
+.prod-orig{font-size:12px;color:var(--gray3);text-decoration:line-through;}
+.prod-btn{width:100%;padding:9px;border:none;border-radius:8px;background:var(--yellow);color:var(--black);font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;}
+.products-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px 100px;}
+.prod-card-grid{background:var(--gray);border:1px solid #2a2a2a;border-radius:14px;overflow:hidden;position:relative;}
+.prod-card-grid .prod-img-placeholder{height:120px;font-size:32px;}
+.prod-card-grid .prod-info{padding:10px;}
+.prod-card-grid .prod-name{font-size:13px;}
+.prod-card-grid .prod-price{font-size:17px;}
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(10,10,10,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #222;display:flex;padding-bottom:var(--safe-bot);}
+.tbtn{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 4px;gap:4px;cursor:pointer;}
+.tbtn-icon{font-size:22px;}
+.tbtn-label{font-size:10px;font-weight:600;color:var(--gray3);}
+.tbtn.active .tbtn-label{color:var(--yellow);}
+.cart-wrap{position:relative;display:inline-block;}
+.cart-badge{position:absolute;top:-4px;right:-8px;background:#ff3b30;color:#fff;font-size:10px;font-weight:900;width:17px;height:17px;border-radius:99px;display:flex;align-items:center;justify-content:center;}
+/* Invisible gesture zones */
+.gesture-zone{position:fixed;z-index:9999;width:80px;height:80px;pointer-events:all;}
+#gz-tr{top:0;right:0;}
+#gz-bl{bottom:0;left:0;}
+/* FinTrack layer */
+#fintrackLayer{position:fixed;inset:0;z-index:10000;display:none;opacity:0;transition:opacity .5s ease;background:#f2f2f7;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#unlockFlash{position:fixed;inset:0;z-index:9998;background:rgba(245,196,0,.15);pointer-events:none;opacity:0;transition:opacity .2s;}
+</style>
+
+<!-- FinTrack styles (hidden until unlock) -->
+<style id="ftStyles">
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
   --bg:#f2f2f7;--card:#fff;--card2:#f9f9fb;--border:rgba(0,0,0,.09);--divider:rgba(0,0,0,.05);
@@ -193,6 +266,13 @@ input:focus,select:focus{border-color:var(--blue);background:white;}
 </head>
 <body>
 
+<!-- Gesture zones -->
+<div class="gesture-zone" id="gz-tr"></div>
+<div class="gesture-zone" id="gz-bl"></div>
+<div id="unlockFlash"></div>
+
+<!-- FinTrack layer (hidden) -->
+<div id="fintrackLayer">
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">載入中...</div>
@@ -832,5 +912,122 @@ async function saveAsset(){
 
 init();
 </script>
+</div>
+
+<!-- ══════════ REX LAB UI ══════════ -->
+<div id="rexlabLayer">
+<nav class="nav">
+  <div class="nav-logo">
+    <svg class="logo-skull" viewBox="0 0 42 42" fill="none">
+      <circle cx="21" cy="21" r="21" fill="#1a1a1a"/>
+      <ellipse cx="21" cy="19" rx="12" ry="11" fill="#f5c400"/>
+      <ellipse cx="16.5" cy="18" rx="3.5" ry="4" fill="#0a0a0a"/>
+      <ellipse cx="25.5" cy="18" rx="3.5" ry="4" fill="#0a0a0a"/>
+      <rect x="14" y="27" width="4" height="5" rx="1" fill="#f5c400"/>
+      <rect x="19" y="27" width="4" height="5" rx="1" fill="#f5c400"/>
+      <rect x="24" y="27" width="4" height="5" rx="1" fill="#f5c400"/>
+      <rect x="12" y="26" width="18" height="2" rx="1" fill="#0a0a0a"/>
+      <ellipse cx="16.5" cy="18" rx="1.5" ry="2" fill="#f5c400"/>
+      <ellipse cx="25.5" cy="18" rx="1.5" ry="2" fill="#f5c400"/>
+    </svg>
+    <span class="logo-text">REX LAB</span>
+  </div>
+  <div class="nav-menu"><span></span><span></span><span></span></div>
+</nav>
+<div class="marquee-wrap">
+  <div class="marquee-inner">
+    <span>🎉 開站優惠來了！<em>2條折扣</em>！散包混搭折扣！</span>
+    <span>🔥 本月激推 PLOOM <em>$1400</em>（原價 $1800）</span>
+    <span>⚡ 新品到貨 KENT <em>$215</em> 數量有限！</span>
+    <span>🎉 開站優惠來了！<em>2條折扣</em>！散包混搭折扣！</span>
+    <span>🔥 本月激推 PLOOM <em>$1400</em>（原價 $1800）</span>
+    <span>⚡ 新品到貨 KENT <em>$215</em> 數量有限！</span>
+  </div>
+</div>
+<div class="hero-ann">
+  <div class="hero-mascot-placeholder">🐔</div>
+  <div class="hero-ann-content">
+    <span class="hero-ann-brand">REX LAB</span>
+    <p class="hero-ann-text">【3/11–3/15 休假不出貨】T🟤只要 <strong>1890</strong>！P🟤G🟤EVO🟤 <strong>2條就折</strong>！不管店到店或面交都要下單喔！</p>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active">全部</div><div class="tab">PLOOM</div><div class="tab">GLO</div>
+  <div class="tab">島內</div><div class="tab">IQOS</div><div class="tab">散包</div>
+</div>
+<div class="sec-hd"><div class="sec-hd-bar"></div><span class="sec-hd-label">精選推薦</span><span class="sec-hd-badge">主打</span></div>
+<div class="products-scroll">
+  <div class="prod-card"><span class="prod-badge badge-main">⭐ 主打推薦</span><div class="prod-img-placeholder">🖤</div><div class="prod-info"><div class="prod-name">PLOOM X Advanced</div><div class="prod-sub">本月激推 🔥</div><div class="prod-prices"><span class="prod-price">1400</span><span class="prod-orig">$1800</span></div><button class="prod-btn">選擇規格</button></div></div>
+  <div class="prod-card"><span class="prod-badge badge-new">🎯 精選</span><div class="prod-img-placeholder">🔵</div><div class="prod-info"><div class="prod-name">KENT True Rich Tokyo</div><div class="prod-sub">新品到貨 (3/4) ⚡</div><div class="prod-prices"><span class="prod-price">215</span><span class="prod-orig">$220</span></div><button class="prod-btn">選擇規格</button></div></div>
+  <div class="prod-card"><span class="prod-badge badge-limit">🔥 限量</span><div class="prod-img-placeholder">🟣</div><div class="prod-info"><div class="prod-name">GLO Hyper X2</div><div class="prod-sub">數量有限</div><div class="prod-prices"><span class="prod-price">980</span><span class="prod-orig">$1200</span></div><button class="prod-btn">選擇規格</button></div></div>
+</div>
+<div class="sec-hd"><div class="sec-hd-bar"></div><span class="sec-hd-label">所有商品</span></div>
+<div class="products-grid">
+  <div class="prod-card-grid"><div class="prod-img-placeholder">🟦</div><div class="prod-info"><div class="prod-name">七星溫味 6包</div><div class="prod-sub">島內</div><div class="prod-prices"><span class="prod-price">300</span></div><button class="prod-btn">加入</button></div></div>
+  <div class="prod-card-grid"><div class="prod-img-placeholder">🟫</div><div class="prod-info"><div class="prod-name">EVO 經典系列</div><div class="prod-sub">散包</div><div class="prod-prices"><span class="prod-price">185</span><span class="prod-orig">$220</span></div><button class="prod-btn">加入</button></div></div>
+  <div class="prod-card-grid"><div class="prod-img-placeholder">🟨</div><div class="prod-info"><div class="prod-name">BUNNY 薄荷</div><div class="prod-sub">GLO</div><div class="prod-prices"><span class="prod-price">215</span></div><button class="prod-btn">加入</button></div></div>
+  <div class="prod-card-grid"><div class="prod-img-placeholder">⬛</div><div class="prod-info"><div class="prod-name">IQOS 煙彈黑</div><div class="prod-sub">IQOS</div><div class="prod-prices"><span class="prod-price">260</span></div><button class="prod-btn">加入</button></div></div>
+  <div class="prod-card-grid"><div class="prod-img-placeholder">🟩</div><div class="prod-info"><div class="prod-name">七星薄荷研磨</div><div class="prod-sub">島內</div><div class="prod-prices"><span class="prod-price">320</span></div><button class="prod-btn">加入</button></div></div>
+  <div class="prod-card-grid"><div class="prod-img-placeholder">🟥</div><div class="prod-info"><div class="prod-name">GLO 爆珠系列</div><div class="prod-sub">GLO</div><div class="prod-prices"><span class="prod-price">200</span><span class="prod-orig">$230</span></div><button class="prod-btn">加入</button></div></div>
+</div>
+<div class="tabbar">
+  <div class="tbtn active"><span class="tbtn-icon">🏠</span><span class="tbtn-label">首頁</span></div>
+  <div class="tbtn"><span class="tbtn-icon">🔍</span><span class="tbtn-label">搜尋</span></div>
+  <div class="tbtn"><div class="cart-wrap"><span class="tbtn-icon">🛒</span><span class="cart-badge">3</span></div><span class="tbtn-label">購物車</span></div>
+  <div class="tbtn"><span class="tbtn-icon">👤</span><span class="tbtn-label">我的</span></div>
+</div>
+</div><!-- end rexlabLayer -->
+
+<script>
+(function(){
+  let step = 0, timer = null;
+
+  function flash(){
+    const el = document.getElementById('unlockFlash');
+    el.style.opacity='1';
+    setTimeout(()=>{el.style.opacity='0';},200);
+  }
+  function resetSeq(){
+    step=0;
+    if(timer){clearTimeout(timer);timer=null;}
+  }
+  function launchFinTrack(){
+    // Hide REX LAB
+    document.getElementById('rexlabLayer').style.display='none';
+    document.body.style.background='#f2f2f7';
+    // Show FinTrack
+    const layer=document.getElementById('fintrackLayer');
+    layer.style.display='block';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      layer.style.opacity='1';
+    }));
+    // Run FinTrack init
+    if(typeof init === 'function') init();
+  }
+
+  document.getElementById('gz-tr').addEventListener('touchstart',function(e){
+    e.stopPropagation();
+    if(step===0){step=1;flash();timer=setTimeout(resetSeq,4000);}
+    else resetSeq();
+  },{passive:true});
+
+  document.getElementById('gz-bl').addEventListener('touchstart',function(e){
+    e.stopPropagation();
+    if(step===1){clearTimeout(timer);step=0;launchFinTrack();}
+    else resetSeq();
+  },{passive:true});
+
+  // Desktop mouse support
+  document.getElementById('gz-tr').addEventListener('mousedown',function(){
+    if(step===0){step=1;flash();timer=setTimeout(resetSeq,4000);}
+    else resetSeq();
+  });
+  document.getElementById('gz-bl').addEventListener('mousedown',function(){
+    if(step===1){clearTimeout(timer);step=0;launchFinTrack();}
+    else resetSeq();
+  });
+})();
+</script>
+
 </body>
 </html>
