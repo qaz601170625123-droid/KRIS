@@ -978,52 +978,37 @@ init();
 
 <script>
 (function(){
-  let step = 0, timer = null;
+  const REQUIRED = 5;
+  let count = 0, timer = null;
 
-  function flash(){
-    const el = document.getElementById('unlockFlash');
-    el.style.opacity='1';
-    setTimeout(()=>{el.style.opacity='0';},200);
-  }
-  function resetSeq(){
-    step=0;
-    if(timer){clearTimeout(timer);timer=null;}
-  }
   function launchFinTrack(){
-    // Hide REX LAB
     document.getElementById('rexlabLayer').style.display='none';
     document.body.style.background='#f2f2f7';
-    // Show FinTrack
     const layer=document.getElementById('fintrackLayer');
     layer.style.display='block';
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       layer.style.opacity='1';
     }));
-    // Run FinTrack init
     if(typeof init === 'function') init();
   }
 
-  document.getElementById('gz-tr').addEventListener('touchstart',function(e){
-    e.stopPropagation();
-    if(step===0){step=1;flash();timer=setTimeout(resetSeq,4000);}
-    else resetSeq();
-  },{passive:true});
+  function onLogoTap(){
+    count++;
+    if(timer) clearTimeout(timer);
+    if(count >= REQUIRED){
+      count=0;
+      launchFinTrack();
+    } else {
+      timer = setTimeout(()=>{ count=0; }, 1500);
+    }
+  }
 
-  document.getElementById('gz-bl').addEventListener('touchstart',function(e){
+  const logo = document.getElementById('logoTap');
+  logo.addEventListener('touchstart', function(e){
     e.stopPropagation();
-    if(step===1){clearTimeout(timer);step=0;launchFinTrack();}
-    else resetSeq();
-  },{passive:true});
-
-  // Desktop mouse support
-  document.getElementById('gz-tr').addEventListener('mousedown',function(){
-    if(step===0){step=1;flash();timer=setTimeout(resetSeq,4000);}
-    else resetSeq();
-  });
-  document.getElementById('gz-bl').addEventListener('mousedown',function(){
-    if(step===1){clearTimeout(timer);step=0;launchFinTrack();}
-    else resetSeq();
-  });
+    onLogoTap();
+  }, {passive:true});
+  logo.addEventListener('mousedown', onLogoTap);
 })();
 </script>
 
